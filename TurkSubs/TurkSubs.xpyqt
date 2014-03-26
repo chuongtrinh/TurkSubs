@@ -1,3 +1,4 @@
+<!DOCTYPE XUPProject>
 <!--
 ###########################################################################################
 ##      Created using Monkey Studio IDE v1.9.0.4 (1.9.0.4)
@@ -15,15 +16,14 @@
 ##
 ###########################################################################################
 -->
-<!DOCTYPE XUPProject>
-<project name="TurkSubs" version="1.1.0" >
+<project version="1.1.0" name="TurkSubs">
     <variable name="XUP.MAIN_FILE">
         <value>main.py</value>
     </variable>
     <variable name="FORMS">
         <file>mainwindow.ui</file>
     </variable>
-    <variable name="PYTHON_FILES" >
+    <variable name="PYTHON_FILES">
         <file>main.py</file>
         <file>mainwindow.py</file>
     </variable>
