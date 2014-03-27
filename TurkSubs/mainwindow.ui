@@ -18,7 +18,7 @@
     <property name="geometry">
      <rect>
       <x>490</x>
-      <y>270</y>
+      <y>250</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -202,6 +202,19 @@
     </property>
     <property name="text">
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Secs&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="resultButton">
+    <property name="geometry">
+     <rect>
+      <x>490</x>
+      <y>300</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Hits</string>
     </property>
    </widget>
   </widget>
