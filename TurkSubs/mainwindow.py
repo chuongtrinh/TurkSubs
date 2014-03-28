@@ -62,10 +62,10 @@ class MainWindow ( QMainWindow ):
 	def startHit(self,Url,index):
 		#--------------- CREATE THE HIT -------------------
 		mtc = MTurkConnection(aws_access_key_id=ACCESS_ID, aws_secret_access_key=SECRET_KEY, host=HOST)
-		title = 'Translate a short movie clip ' + str(index)
-		description = ('Watch a short clip and write down a transcript or screenplay of the clip\n' 
-			   'If there is no speech to translate, please describe what is happening in the clip') 
-		keywords = 'video, transcript, translate'
+		title = 'Transcribe a short movie clip ' + str(index)
+		description = ('Watch a short clip and write down subtitles for the clip\n' 
+			   'If there is no speech to translate, but there is sound, type what you hear (e.g., (music playing) or (door closing))') 
+		keywords = 'video, transcript, transcribe, subtitle'
 		#---------------  BUILD OVERVIEW -------------------
 		overview = Overview()
 		overview.append_field('Title', 'Translate a short video clip')
