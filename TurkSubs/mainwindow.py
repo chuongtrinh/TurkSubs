@@ -11,6 +11,7 @@ HOST = 'mechanicalturk.sandbox.amazonaws.com'
 mtc = MTurkConnection(aws_access_key_id=ACCESS_ID, aws_secret_access_key=SECRET_KEY, host=HOST)
 class MainWindow ( QMainWindow ):
 	"""MainWindow inherits QMainWindow"""
+	hit_time_frame = dict()
 	def __init__ ( self, parent = None ):
 		QMainWindow.__init__( self, parent )
 		self.ui = Ui_MainWindow()
@@ -29,6 +30,8 @@ class MainWindow ( QMainWindow ):
 		urlTemplate1 = '?start=' 
 		urlTemplate2 = '&end='
 		urlTemplate3 = '&version=3'
+		urls = {}
+		j = 1
 		urls = {}
 		j = 1
 		while j < nSplits:
@@ -63,8 +66,6 @@ class MainWindow ( QMainWindow ):
 		description = ('Watch a short clip and write down a transcript or screenplay of the clip\n' 
 			   'If there is no speech to translate, please describe what is happening in the clip') 
 		keywords = 'video, transcript, translate'
-		print Url
-		print Url.replace('&','&amp;')
 		#---------------  BUILD OVERVIEW -------------------
 		overview = Overview()
 		overview.append_field('Title', 'Translate a short video clip')
@@ -79,7 +80,14 @@ class MainWindow ( QMainWindow ):
 		question_form.append(overview)
 		question_form.append(q1)
 		my_hit = mtc.create_hit(questions=question_form, lifetime=60*5, max_assignments=1, title=title, description=description, keywords=keywords, duration = 5*60,reward=0.00, response_groups= 'Minimal')
-		my_hit_id = my_hit[0].HITTypeId
+		#--------------- ASSIGN HITID TO ARRAY OF TIMEFRAME --------#
+		my_hit_id = my_hit[0].HITId
+		#looking for start time
+		#The end time can be computed by +10
+		start = Url.find('start=') +6
+		end = Url.find('&end',start)
+		self.hit_time_frame[my_hit_id] = Url[start:end]
+		print self.hit_time_frame[my_hit_id]
 		print my_hit_id
 		#mtc.disable_hit(my_hit_id)
 
@@ -111,9 +119,10 @@ class MainWindow ( QMainWindow ):
 				print "Answers of the worker %s" % assignment.WorkerId
 				for question_form_answer in assignment.answers[0]:
 					for value in question_form_answer.fields: 
-						#turker hit result, timeframe value will be included here also
-						#for frame,value in in question_form_answer.fields:
-						#handling all the results here!!!!!
+						# turker hit result will be included here 
+						# get the start time value of the clip by hit_time_frame[hit.HITId]
+						# for value in in question_form_answer.fields:
+						# handling all the results here!!!!!
 						print "%s" % (value) 
 				print "--------------------"
 		self.ui.plainTextEdit.setPlainText("Done")
@@ -121,9 +130,12 @@ class MainWindow ( QMainWindow ):
 	@pyqtSlot()
 	def splitFile(self):
 		framesdict,splits = self.framegen(int(self.ui.lengthTextBox.toPlainText()),int(self.ui.splitLengthTextBox.toPlainText()))
-		URLs = self.urlgen(framesdict,splits)
+		#URLs = self.urlgen(framesdict,splits,self.ui.linkTextBox.toPlainText())
+		URLs = self.urlgen(framesdict,splits,"https://www.youtube.com/v/xTZepKsJ_ns")
+		turkerPerClip = int(self.ui.numTurkerTextBox.toPlainText())
 		for x in range(10,13): #a list of urls to put on mturk
-			print URLs[x]
-			self.startHit(URLs[x],x)
+			for y in range(0, turkerPerClip):
+				print URLs[x]
+				self.startHit(URLs[x],x)
 		self.ui.plainTextEdit.setPlainText(URLs[10])
 		print mtc.get_account_balance()[0]
