@@ -22,16 +22,17 @@ class MainWindow ( QMainWindow ):
 		self.ui = None
 	
 	@staticmethod
-	def urlgen(frames, nSplits):
+	def urlgen(frames, nSplits, url):
 		'''This function generates a dictionary of URLS, format {index: "url"}
 		input dictionary of frames from framegen(minutes, eachLength)'''
-		urlTemplate1 = 'https://www.youtube.com/v/Rxg-dYnqxFg?start=' #replace the video id part with our video
+		#url for Tinyhearts: https://www.youtube.com/v/xTZepKsJ_ns
+		urlTemplate1 = '?start=' 
 		urlTemplate2 = '&end='
 		urlTemplate3 = '&version=3'
 		urls = {}
 		j = 1
 		while j < nSplits:
-			tempurl = urlTemplate1 + str(frames[j][0]) + urlTemplate2 + str(frames[j][1]) + urlTemplate3
+			tempurl = url + urlTemplate1 + str(frames[j][0]) + urlTemplate2 + str(frames[j][1]) + urlTemplate3
 			urls[j] = tempurl
 			j += 1
 		return urls
