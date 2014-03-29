@@ -4,14 +4,15 @@ from PyQt4.QtCore import *
 from boto.mturk.connection import MTurkConnection
 from boto.mturk.question import *
  
-ACCESS_ID = ''
-SECRET_KEY = ''
+ACCESS_ID = 'AKIAIOEDNAK4BNQVO3IA'
+SECRET_KEY = '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'
 HOST = 'mechanicalturk.sandbox.amazonaws.com'
 
 mtc = MTurkConnection(aws_access_key_id=ACCESS_ID, aws_secret_access_key=SECRET_KEY, host=HOST)
 class MainWindow ( QMainWindow ):
 	"""MainWindow inherits QMainWindow"""
 	hit_time_frame = dict()
+	hit_result = dict()
 	def __init__ ( self, parent = None ):
 		QMainWindow.__init__( self, parent )
 		self.ui = Ui_MainWindow()
@@ -62,10 +63,10 @@ class MainWindow ( QMainWindow ):
 	def startHit(self,Url,index):
 		#--------------- CREATE THE HIT -------------------
 		mtc = MTurkConnection(aws_access_key_id=ACCESS_ID, aws_secret_access_key=SECRET_KEY, host=HOST)
-		title = 'Transcribe a short movie clip ' + str(index)
-		description = ('Watch a short clip and write down subtitles for the clip\n' 
-			   'If there is no speech to translate, but there is sound, type what you hear (e.g., (music playing) or (door closing))') 
-		keywords = 'video, transcript, transcribe, subtitle'
+		title = 'Translate a short movie clip ' + str(index)
+		description = ('Watch a short clip and write down a transcript or screenplay of the clip\n' 
+			   'If there is no speech to translate, please describe what is happening in the clip') 
+		keywords = 'video, transcript, translate'
 		#---------------  BUILD OVERVIEW -------------------
 		overview = Overview()
 		overview.append_field('Title', 'Translate a short video clip')
@@ -75,19 +76,29 @@ class MainWindow ( QMainWindow ):
 		qc1.append_field('FormattedContent','<![CDATA[<iframe width="600" height="400" src="'+ Url.replace('&','&amp;') + '">No video supported</iframe>]]>')
 		fta1 =  FreeTextAnswer()
 		q1 = Question(identifier='design',content=qc1,answer_spec=AnswerSpecification(fta1),is_required=True)
+		#looking for start time
+		#The end time can be computed by +10
+		
+		
+		start = Url.find('start=') +6
+		end = Url.find('&end',start)
+		time_frame = [('Time',Url[start:end])]
+		qc2 = QuestionContent()
+		qc2.append_field('Title',' ')
+		fta2 = SelectionAnswer(min=1,max=1, style='dropdown',selections=time_frame,type='text',other=False)
+		q2 = Question(identifier='extra',content=qc2,answer_spec=AnswerSpecification(fta2),is_required=False)		
+		
 		#--------------- BUILD THE QUESTION FORM ------------------#
 		question_form = QuestionForm()
 		question_form.append(overview)
 		question_form.append(q1)
-		my_hit = mtc.create_hit(questions=question_form, lifetime=60*5, max_assignments=1, title=title, description=description, keywords=keywords, duration = 5*60,reward=0.00, response_groups= 'Minimal')
+		question_form.append(q2)
+		my_hit = mtc.create_hit(questions=question_form, lifetime=60*5, max_assignments=3, title=title, description=description, keywords=keywords, duration = 5*60,reward=0.00, response_groups= 'Minimal')
 		#--------------- ASSIGN HITID TO ARRAY OF TIMEFRAME --------#
-		my_hit_id = my_hit[0].HITId
-		#looking for start time
-		#The end time can be computed by +10
-		start = Url.find('start=') +6
-		end = Url.find('&end',start)
-		self.hit_time_frame[my_hit_id] = Url[start:end]
-		print self.hit_time_frame[my_hit_id]
+		my_hit_id = my_hit[0].HITTypeId
+		print "Hit type id 1: %s" % my_hit[0].HITTypeId
+
+		#print self.hit_time_frame[my_hit_id]
 		print my_hit_id
 		#mtc.disable_hit(my_hit_id)
 
@@ -109,31 +120,45 @@ class MainWindow ( QMainWindow ):
 			print "Request hits page %i" % pn
 			temp_hits = mtc.get_reviewable_hits(page_size=page_size,page_number=pn)
 			hits.extend(temp_hits)
-		return hits    
+		return hits	
 
 	def get_hit_result(self):
-		hits = self.get_all_reviewable_hits(mtc) 
+		hits = self.get_all_reviewable_hits(mtc)
+		data = []
 		for hit in hits:
 			assignments = mtc.get_assignments(hit.HITId)
 			for assignment in assignments:
+				tempRow = []
 				print "Answers of the worker %s" % assignment.WorkerId
-				for question_form_answer in assignment.answers[0]:
-					for value in question_form_answer.fields: 
-						# turker hit result will be included here 
-						# get the start time value of the clip by hit_time_frame[hit.HITId]
-						# for value in in question_form_answer.fields:
-						# handling all the results here!!!!!
-						print "%s" % (value) 
-				print "--------------------"
+				print "Hit id %s" % hit.HITId
+				time_frame = assignment.answers[0][1].fields[0]
+				turker_answer = assignment.answers[0][0].fields[0]
+				print "time frame: %s" % time_frame
+				print "answer: %s" % turker_answer
+				tempRow.append(time_frame)
+				tempRow.append(hit.HITId)
+				tempRow.append(turker_answer)
+				data.row(tempRow)
+			print "--------------------"
+			#mtc.disable_hit(hit.HITId)
 		self.ui.plainTextEdit.setPlainText("Done")
- 
+		fuzzyStrings.printMatrix(data)
+	
+	def make_hit_decision(self,hit_results):
+		for hit in hit_results:
+			if hit.score >= 0.75:
+				mtc.approve_assignment(hit.assignmentID)
+			else:
+				mtc.reject_assignment(hit.assignmentID)
+				
+	
 	@pyqtSlot()
 	def splitFile(self):
 		framesdict,splits = self.framegen(int(self.ui.lengthTextBox.toPlainText()),int(self.ui.splitLengthTextBox.toPlainText()))
 		#URLs = self.urlgen(framesdict,splits,self.ui.linkTextBox.toPlainText())
 		URLs = self.urlgen(framesdict,splits,"https://www.youtube.com/v/xTZepKsJ_ns")
 		turkerPerClip = int(self.ui.numTurkerTextBox.toPlainText())
-		for x in range(10,13): #a list of urls to put on mturk
+		for x in range(1,4): #a list of urls to put on mturk
 			for y in range(0, turkerPerClip):
 				print URLs[x]
 				self.startHit(URLs[x],x)
