@@ -47,3 +47,45 @@ def printMatrix(matrix):
     fmt = '\t'.join('{{:{}}}'.format(x) for x in lens)
     table = [fmt.format(*row) for row in s]
     print '\n'.join(table)
+
+def scoreStrings(matrix):
+    totalScores = []
+    for row in matrix:
+        rowScores = []
+        sumRow = sum(row) - 1.0
+        prodRow = reduce(lambda x, y: x*y, row, 1)
+        AvgRow = sumRow / (len(row) - 1)
+        rowScores.append(sumRow)
+        rowScores.append(prodRow)
+        rowScores.append(AvgRow)
+        totalScores.append(rowScores)
+    return totalScores    
+
+def pickBestScores(matrix):
+    bestScores = []
+    
+    maxSum = max((element[0]) for element in matrix)
+    maxProd = max((element[1]) for element in matrix)
+    maxAvg = max((element[2]) for element in matrix)
+    
+    bestScores.append(maxSum)
+    bestScores.append(maxProd)
+    bestScores.append(maxAvg)
+    
+    return bestScores
+
+def pickBestIndexes(matrix):
+    scores = pickBestScores(matrix)
+    
+
+foo = ratioMatrix(strings)
+printMatrix(foo)
+
+print '----------------------------------------------------------------------------------------'
+
+bar = scoreStrings(foo)
+printMatrix(bar)
+
+print '----------------------------------------------------------------------------------------'
+
+print(pickBest(bar))
