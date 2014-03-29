@@ -4,8 +4,8 @@ from PyQt4.QtCore import *
 from boto.mturk.connection import MTurkConnection
 from boto.mturk.question import *
  
-ACCESS_ID = 'AKIAIOEDNAK4BNQVO3IA'
-SECRET_KEY = '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'
+ACCESS_ID = ''
+SECRET_KEY = ''
 HOST = 'mechanicalturk.sandbox.amazonaws.com'
 
 mtc = MTurkConnection(aws_access_key_id=ACCESS_ID, aws_secret_access_key=SECRET_KEY, host=HOST)
