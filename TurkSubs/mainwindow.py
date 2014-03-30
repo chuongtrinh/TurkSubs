@@ -3,6 +3,7 @@ from PyQt4.QtCore import *
 ( Ui_MainWindow, QMainWindow ) = uic.loadUiType( 'mainwindow.ui' )
 from boto.mturk.connection import MTurkConnection
 from boto.mturk.question import *
+import fuzzyStrings
  
 ACCESS_ID = ''
 SECRET_KEY = ''
@@ -131,16 +132,19 @@ class MainWindow ( QMainWindow ):
 				tempRow = []
 				print "Answers of the worker %s" % assignment.WorkerId
 				print "Hit id %s" % hit.HITId
+				assignmentID = assignment.AssignmentId
 				time_frame = assignment.answers[0][1].fields[0]
 				turker_answer = assignment.answers[0][0].fields[0]
+				print "assignment: %s" % assignmentID
 				print "time frame: %s" % time_frame
 				print "answer: %s" % turker_answer
 				tempRow.append(time_frame)
 				tempRow.append(hit.HITId)
 				tempRow.append(turker_answer)
-				data.row(tempRow)
+				tempRow.append(assignmentID)
+				data.append(tempRow)
+				#mtc.disable_hit(hit.HITId)
 			print "--------------------"
-			#mtc.disable_hit(hit.HITId)
 		self.ui.plainTextEdit.setPlainText("Done")
 		fuzzyStrings.printMatrix(data)
 	
