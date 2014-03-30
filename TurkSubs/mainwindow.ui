@@ -17,11 +17,17 @@
    <widget class="QPushButton" name="submitButton">
     <property name="geometry">
      <rect>
-      <x>490</x>
+      <x>430</x>
       <y>250</y>
       <width>75</width>
       <height>23</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
     </property>
     <property name="text">
      <string>Submit</string>
@@ -207,14 +213,41 @@
    <widget class="QPushButton" name="resultButton">
     <property name="geometry">
      <rect>
-      <x>490</x>
-      <y>300</y>
+      <x>430</x>
+      <y>290</y>
       <width>75</width>
       <height>23</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
     <property name="text">
      <string>Hits</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="deleteHitButton">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>290</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
+      <underline>false</underline>
+     </font>
+    </property>
+    <property name="text">
+     <string>Delete Hits</string>
     </property>
    </widget>
   </widget>
