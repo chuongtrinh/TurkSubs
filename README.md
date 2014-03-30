@@ -1,22 +1,23 @@
-++++++++++
-+TURKSUBS+
-++++++++++
 
-TEAM MEMBERS:
+#TURKSUBS
+
+
+##TEAM MEMBERS:  
 Laramie Goode, Ross Hudgins, Chuong Trinh
 
-DESCRIPTION:
+##DESCRIPTION:  
 TurkSubs is a crowdsourced video captioning program. TurkSubs uses an uploaded Youtube video and sends out HITs to Turkers to transcribe the audio of each individual video segment, picks the best results, and combines them all into a .srt file that can be used as a subtitle. 
 
-REQUIRED INSTALLS:
+##REQUIRED INSTALLS:  
 Make sure you have Python 2.7, Boto, and PyQT4 installed.
 
-Download Links:
-Python 2.7: https://www.python.org/download/
-Boto:       http://boto.readthedocs.org/en/latest/
-PyQT4:      http://www.riverbankcomputing.com/software/pyqt/download
+###Download Links:  
+Python 2.7: https://www.python.org/download/  
+Boto:       http://boto.readthedocs.org/en/latest/  
+PyQT4:      http://www.riverbankcomputing.com/software/pyqt/download  
 
-HOW-TO RUN:
+##HOW-TO RUN:
+
 Launch main.py, a graphical window should be displayed with TurkSubs near the top.
 
 Enter the link to the Youtube video you want captions for. Make sure the link format is: https://www.youtube.com/v/<videoId> instead of https://www.youtube.com/watch?v=<videoID> (you can just edit out the watch? and replace the = with a / ). If you are wanting to see the subtitles in action, use a Youtube video that is from your own Youtube account so that you can upload the generated subtitles.srt file into your Youtube video page. 
