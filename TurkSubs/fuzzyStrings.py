@@ -1,5 +1,4 @@
 import difflib
-import numpy
 from collections import Counter
 
 first = "The quick brown fox, jumped over the fence!!"
@@ -63,7 +62,12 @@ def scoreStrings(strings):
         rowScores = []
         sumRow = sum(row) - 1.0
         prodRow = reduce(lambda x, y: x*y, row, 1)
-        AvgRow = sumRow / (len(row) - 1)
+        
+        if len(row) > 1:
+            AvgRow = sumRow / (len(row) - 1)
+        else:
+            AvgRow = sumRow
+            
         rowScores.append(sumRow)
         rowScores.append(prodRow)
         rowScores.append(AvgRow)
@@ -107,7 +111,3 @@ def pickBestIndex(strings):
 
 def pickBestString(strings):
     return strings[pickBestIndex(strings)]
-
-print '----------------------------------------------------------------------------------------'
-
-print(pickBestString(strings))
