@@ -6,8 +6,8 @@ from boto.mturk.question import *
 import operator
 import fuzzyStrings
  
-ACCESS_ID = ''
-SECRET_KEY = ''
+ACCESS_ID = 'AKIAIOEDNAK4BNQVO3IA'
+SECRET_KEY = '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'
 HOST = 'mechanicalturk.sandbox.amazonaws.com'
 
 mtc = MTurkConnection(aws_access_key_id=ACCESS_ID, aws_secret_access_key=SECRET_KEY, host=HOST)
@@ -62,48 +62,10 @@ class MainWindow ( QMainWindow ):
             i += 1
         return frames, nSplits
         #print frames
- 
-    def startHit(self,Url,index):
-        #--------------- CREATE THE HIT -------------------
-        mtc = MTurkConnection(aws_access_key_id=ACCESS_ID, aws_secret_access_key=SECRET_KEY, host=HOST)
-        title = 'Translate a short movie clip ' + str(index)
-        description = ('Watch a short clip and write down a transcript or screenplay of the clip\n' 
-               'If there is no speech to translate, please describe what is happening in the clip') 
-        keywords = 'video, transcript, translate'
-        #---------------  BUILD OVERVIEW -------------------
-        overview = Overview()
-        overview.append_field('Title', 'Translate a short video clip')
-        overview.append(FormattedContent('<a target="_blank"'' href="http://www.toforge.com"></a>'))
-        #---------------  BUILD MOVIE CLIP -------------------
-        qc1 = QuestionContent() # I will modify this to embed some codes indicating time frame
-        qc1.append_field('FormattedContent','<![CDATA[<iframe width="600" height="400" src="'+ Url.replace('&','&amp;') + '">No video supported</iframe>]]>')
-        fta1 =  FreeTextAnswer()
-        q1 = Question(identifier='design',content=qc1,answer_spec=AnswerSpecification(fta1),is_required=True)
-        #looking for start time
-        #The end time can be computed by +10
-        
-        
-        start = Url.find('start=') +6
-        end = Url.find('&end',start)
-        time_frame = [('Time',Url[start:end])]
-        qc2 = QuestionContent()
-        qc2.append_field('Title',' ')
-        fta2 = SelectionAnswer(min=1,max=1, style='dropdown',selections=time_frame,type='text',other=False)
-        q2 = Question(identifier='extra',content=qc2,answer_spec=AnswerSpecification(fta2),is_required=False)        
-        
-        #--------------- BUILD THE QUESTION FORM ------------------#
-        question_form = QuestionForm()
-        question_form.append(overview)
-        question_form.append(q1)
-        question_form.append(q2)
-        my_hit = mtc.create_hit(questions=question_form, lifetime=60*5, max_assignments=3, title=title, description=description, keywords=keywords, duration = 5*60,reward=0.00, response_groups= 'Minimal')
-        #--------------- ASSIGN HITID TO ARRAY OF TIMEFRAME --------#
-        my_hit_id = my_hit[0].HITTypeId
-        print "Hit type id 1: %s" % my_hit[0].HITTypeId
-
-        #print self.hit_time_frame[my_hit_id]
-        print my_hit_id
-        #mtc.disable_hit(my_hit_id)
+    
+    def __del__ ( self ):
+        self.ui = None
+   
     def startHit(self,Url,index):
         #--------------- CREATE THE HIT -------------------
         mtc = MTurkConnection(aws_access_key_id=ACCESS_ID, aws_secret_access_key=SECRET_KEY, host=HOST)
@@ -150,21 +112,30 @@ class MainWindow ( QMainWindow ):
         #--------------- ASSIGN HITID TO ARRAY OF TIMEFRAME --------#
         my_hit_id = my_hit[0].HITTypeId
         print "Hit type id 1: %s" % my_hit[0].HITTypeId
-
-        #print self.hit_time_frame[my_hit_id]
-        print my_hit_id
-        #mtc.disable_hit(my_hit_id)
-
-    def make_hit_decision(self,hit_results):
-        #for hit in hit_results:
-        if hit_results[4] >= 0.75:
-            mtc.approve_assignment(hit_results[1])
+        
+    @staticmethod
+    def get_all_reviewable_hits(mtc):
+        page_size = 50
+        hits = mtc.get_reviewable_hits(page_size=page_size)
+        print "Total results to fetch %s " % hits.TotalNumResults
+        print "Request hits page %i" % 1
+        total_pages = float(hits.TotalNumResults)/page_size
+        int_total= int(total_pages)
+        if(total_pages-int_total>0):
+            total_pages = int_total+1
         else:
-            mtc.reject_assignment(hit_results[1])
-   
-
+            total_pages = int_total
+        pn = 1
+        while pn < total_pages:
+            pn = pn + 1
+            print "Request hits page %i" % pn
+            temp_hits = mtc.get_reviewable_hits(page_size=page_size,page_number=pn)
+            hits.extend(temp_hits)
+        return hits    
+    
     def get_hit_result(self):
         hits = self.get_all_reviewable_hits(mtc)
+        
         data = []
         for hit in hits:
             assignments = mtc.get_assignments(hit.HITId)
@@ -217,6 +188,7 @@ class MainWindow ( QMainWindow ):
             for column in row:
                 strings.append(column[2])
             index = fuzzyStrings.pickBestIndex(strings)
+            bestData.append(row[index])
             scores = fuzzyStrings.scoreStrings(strings)
             
             for i in range(0, len(scores)):
@@ -226,26 +198,41 @@ class MainWindow ( QMainWindow ):
                 tempList.append(b)
                 temp = tuple(tempList)
                 anotherList.append(temp)
-                #print(">>>> %s" %str(temp))
-        
-        #print(anotherList)
         
         for index in range(0, len(timeFrames)):
             temp = [x for x in anotherList if x[0] == timeFrames[index]]
             scoredData[index] = temp    
-            
-        #print(scoredData)                
-        #return scoredData
-        fuzzyStrings.printMatrix(anotherList)
         
-        for row in anotherList:
+        formattedBestData = []
+        for row in bestData:
+            tupe = (row[0], row[2])
+            formattedBestData.append(tupe)
+        
+        print('-------------------------------------------------------------------------------------')    
+        fuzzyStrings.printMatrix(anotherList)
+        print('-------------------------------------------------------------------------------------')
+        fuzzyStrings.printMatrix(bestData)
+        print('-------------------------------------------------------------------------------------')
+        
+        for row in formattedBestData:
+            print row
+        
+        self.buildsrt(formattedBestData, int(self.ui.splitLengthTextBox.toPlainText()))
+        
+        #for row in anotherList:
             #make_hit_decision(self, row)
-            if row[4] >= 0.75:
-                mtc.approve_assignment(row[3])
-                print("Approved >> %s" %row)
-            else:
-                mtc.reject_assignment(row[3])
-                print("Rejected >> %s" %row)
+            #if row[4] >= 0.75:
+                #try:
+                    #mtc.approve_assignment(row[3])
+                    #print("Approved >> %s" %(row,))
+                #except:
+                    #mtc.disable_hit(row[1])
+            #else:
+                #try:
+                    #mtc.reject_assignment(row[3])
+                    #print("Rejected >> %s" %(row,))
+                #except:
+                    #mtc.disable_hit(row[1])
     
     def delete_all_hits(self):
         hits2 = mtc.get_all_hits()
@@ -265,3 +252,26 @@ class MainWindow ( QMainWindow ):
                 self.startHit(URLs[x],x)
         self.ui.plainTextEdit.setPlainText(URLs[10])
         print mtc.get_account_balance()[0]
+    
+    def timeformat(self, secs):
+    	m, s = divmod(secs, 60)
+    	h, m = divmod(m, 60)
+    	return "%02i:%02i:%02i,000" % (h,m,s)
+    
+    def buildsrt(self, turkedsubs, eachclip):
+        '''turkedsubtitles dictionary of the format: {index:(start, subs)}'''
+        file = open('subtitles.srt', 'w+')
+        out = ""
+        #srt format:
+            #index
+            #start --> start + eachclip
+            #subs
+            #(empty line)
+        i = 0
+        while i < len(turkedsubs):
+            start = int(turkedsubs[i][0])
+            end = int(turkedsubs[i][0]) + eachclip
+            out += str(i+1) + "\n" + self.timeformat(start) + " --> " + self.timeformat(end) + "\n" + turkedsubs[i][1] + "\n\n"        
+            i += 1
+        file.write(out)
+        file.close()
