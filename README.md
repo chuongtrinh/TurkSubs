@@ -1,4 +1,3 @@
-
 #TURKSUBS
 
 
@@ -17,6 +16,8 @@ Boto:       http://boto.readthedocs.org/en/latest/
 PyQT4:      http://www.riverbankcomputing.com/software/pyqt/download  
 
 ##HOW-TO RUN:
+
+Before running the program, open up mainwindow.py and enter your AMT credentials in the ACCESS_ID and SECRET_KEY variables at the top near starting at line 9.
 
 Launch main.py, a graphical window should be displayed with TurkSubs near the top.
 
